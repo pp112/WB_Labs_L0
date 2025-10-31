@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: demo_user
+      POSTGRES_PASSWORD: demo_pass
+      POSTGRES_DB: demo_orders
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d:ro
+    restart: unless-stopped
+
+  nats-streaming:
+    image: nats-streaming:0.23.0
+    container_name: nats-streaming
+    command: ["--cluster_id", "test-cluster", "--store", "memory"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    restart: unless-stopped
+
+  order-service:
+    build: .
+    container_name: order-service
+    depends_on:
+      - postgres
+      - nats-streaming
+    environment:
+      DSN: "postgres://demo_user:demo_pass@postgres:5432/demo_orders"
+      NATS_URL: "nats://nats-streaming:4222"
+      CLUSTER_ID: "test-cluster"
+      CLIENT_ID: "order-svc-1"
+      CHANNEL: "orders"
+      DURABLE: "order-durable"
+      HTTP_ADDR: ":8080"
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+  
+  publisher:
+    build:
+      context: ./tools/publisher
+    container_name: publisher
+    depends_on:
+      - nats-streaming
+    volumes:
+      - ./test_orders:/test_orders
+    working_dir: /app
+    networks:
+      - default
+    entrypoint: ["tail", "-f", "/dev/null"]
+    
+  
+volumes:
+  pgdata:

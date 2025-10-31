@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Order viewer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .box { padding: 12px; border: 1px solid #ddd; border-radius: 6px; }
+    input { padding: 8px; width: 400px; }
+    pre { background: #f7f7f7; padding: 12px; border-radius: 6px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h2>Order viewer</h2>
+  <div class="box">
+    <label>Order UID: <input id="uid" placeholder="b563feb7b2b84b6test" /></label>
+    <button id="btn">Get order</button>
+  </div>
+  <h3>Result</h3>
+  <div id="result"><em>no data</em></div>
+
+  <script>
+    document.getElementById('btn').onclick = async function() {
+      const uid = document.getElementById('uid').value.trim();
+      if (!uid) {
+        alert('Введите order_uid');
+        return;
+      }
+      const el = document.getElementById('result');
+      el.innerHTML = 'loading...';
+      try {
+        const res = await fetch('/order/' + encodeURIComponent(uid));
+        if (!res.ok) {
+          el.innerHTML = '<pre>Order not found (status ' + res.status + ')</pre>';
+          return;
+        }
+        const data = await res.json();
+        el.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+      } catch (e) {
+        el.innerHTML = '<pre>Ошибка: ' + String(e) + '</pre>';
+      }
+    }
+  </script>
+</body>
+</html>
