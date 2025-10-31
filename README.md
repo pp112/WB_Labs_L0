@@ -1,5 +1,7 @@
 ## Старт
 
+Видео: https://cloud.mail.ru/public/y9g6/K1HnqaBe1
+
 #### 1. Клонируйте репозиторий:
 
 ```bash
