@@ -10,7 +10,7 @@ cd WB_Labs_L0/
 #### 2. Запустите сервисы через Docker Compose:
 
 ```bash
-docker compose --build -d
+docker compose up --build -d
 ```
 
 #### 3. Сделайте скрипт отправки заказов исполняемым:
